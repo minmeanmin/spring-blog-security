@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 
+
 @RequiredArgsConstructor // final이 붙은 애들에 대한 생성자를 만들어줌
 @Controller
 public class UserController {
@@ -19,26 +20,26 @@ public class UserController {
     // 왜 조회인데 post임? 민간함 정보는 body로 보낸다.
     // 로그인만 예외로 select인데 post 사용
     // select * from user_tb where username=? and password=?
-@PostMapping("/login")
-public String login(UserRequest.LoginDTO requestDTO){
-
-
-    System.out.println(requestDTO); // toString -> @Data
-
-    if(requestDTO.getUsername().length() < 3){
-        return "error/400"; // ViewResolver 설정이 되어 있음. (앞 경로, 뒤 경로)
-    }
-
-    User user = userRepository.findByUsernameAndPassword(requestDTO);
-
-    if(user == null){ // 조회 안됨 (401)
-        return "error/401";
-    }else{ // 조회 됐음 (인증됨)
-        session.setAttribute("sessionUser", user); // 락카에 담음 (StateFul)
-    }
-
-    return "redirect:/"; // 컨트롤러가 존재하면 무조건 redirect 외우기
-}
+//    @PostMapping("/login")
+//    public String login(UserRequest.LoginDTO requestDTO){
+//
+//
+//        System.out.println(requestDTO); // toString -> @Data
+//
+//        if(requestDTO.getUsername().length() < 3){
+//            return "error/400"; // ViewResolver 설정이 되어 있음. (앞 경로, 뒤 경로)
+//        }
+//
+//        User user = userRepository.findByUsernameAndPassword(requestDTO);
+//
+//        if(user == null){ // 조회 안됨 (401)
+//            return "error/401";
+//        }else{ // 조회 됐음 (인증됨)
+//            session.setAttribute("sessionUser", user); // 락카에 담음 (StateFul)
+//        }
+//
+//        return "redirect:/"; // 컨트롤러가 존재하면 무조건 redirect 외우기
+//    }
 
     @PostMapping("/join")
     public String join(UserRequest.JoinDTO requestDTO){
@@ -59,12 +60,47 @@ public String login(UserRequest.LoginDTO requestDTO){
     }
 
     @GetMapping("/user/updateForm")
-    public String updateForm() {
+    public String updateForm(HttpServletRequest request) {
+        // 1. 인증 체크
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/loginForm";
+        }
+
+        User user = userRepository.findById(sessionUser.getId());
+
+        request.setAttribute("user", user);
+
         return "user/updateForm";
+    }
+
+    @PostMapping("/user/update")
+    public String update( UserRequest.UpdateDTO requestDTO) {
+        // 1. 인증 체크
+        User sessionUser = (User) session.getAttribute("sessionUser") ;
+        if(sessionUser == null){
+            return "redirect:/loginForm";
+        }
+        // 2. 권한 체크
+        User user = userRepository.findById(sessionUser.getId());
+
+        if(user == null){
+            return "error/400";
+        }
+
+        // 3. 핵심 로직
+        // update user_tb set password=? where id=?
+        userRepository.passwordUpdate(requestDTO, user.getId());
+        user.setPassword(requestDTO.getPassword());
+        session.setAttribute("sessionUser", user);
+        System.out.println("수정 완료! 다시 로그인 하세요");
+        session.invalidate();
+        return "redirect:/loginForm";
     }
 
     @GetMapping("/logout")
     public String logout() {
+        session.invalidate();
         return "redirect:/";
     }
 }

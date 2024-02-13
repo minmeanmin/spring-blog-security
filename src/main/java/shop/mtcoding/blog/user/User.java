@@ -15,7 +15,7 @@ public class User {
     private int id;
     private String username;
     private String password;
-    private String email;
+     private String email;
 
     // 카멜 표기법으로 만들면 DB는 created_at 으로 만들어진다. (언더스코어 기법)
     private LocalDateTime createdAt;

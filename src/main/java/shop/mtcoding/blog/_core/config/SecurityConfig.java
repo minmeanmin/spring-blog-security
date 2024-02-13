@@ -2,13 +2,11 @@ package shop.mtcoding.blog._core.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
-import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 
 @Configuration // 컴퍼넌트 스캔
@@ -16,12 +14,12 @@ public class SecurityConfig {
 
     @Bean
     public BCryptPasswordEncoder encoder(){
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // IoC에 등록, 시큐리티가 로그인 할 때 어떤 해시로 비교해야하는지 알게됨
     }
 
     @Bean
-    public WebSecurityCustomizer ignore(){
-        return w -> w.ignoring().requestMatchers("/board/*", "/static/**", "/h2-console/**");
+    public WebSecurityCustomizer ignore(){ // 정적자원 security filter에서 제외시키기
+        return w -> w.ignoring().requestMatchers("/static/**", "/h2-console/**");
     }
 
     @Bean
@@ -30,9 +28,14 @@ public class SecurityConfig {
         http.csrf(c -> c.disable());
 
         http.authorizeHttpRequests(a -> {
-            a.requestMatchers("/user/updateForm", "/board/**").authenticated()
+            a.requestMatchers(RegexRequestMatcher.regexMatcher("/board/\\d+")).permitAll()
+                    .requestMatchers("/user/**", "/board/**").authenticated()
                     .anyRequest().permitAll();
         });
+//        http.authorizeHttpRequests(a -> {
+//            a.requestMatchers("/board/?").permitAll()
+//                    .requestMatchers("/user/**", "/board/**").authenticated().anyRequest().permitAll();
+//        });
 
         http.formLogin(f -> {
             f.loginPage("/loginForm").loginProcessingUrl("/login").defaultSuccessUrl("/").failureUrl("/loginForm");

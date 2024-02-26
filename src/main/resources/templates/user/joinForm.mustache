@@ -1,4 +1,4 @@
-{{> /layout/header}}
+{{> layout/header}}
 
 <div class="container p-5">
 
@@ -8,9 +8,10 @@
     <div class="card">
         <div class="card-header"><b>회원가입을 해주세요</b></div>
         <div class="card-body">
-            <form action="/join" method="post" enctype="application/x-www-form-urlencoded">
-                <div class="mb-3">
-                    <input type="text" class="form-control" placeholder="Enter username" name="username">
+            <form action="/join" method="post" enctype="application/x-www-form-urlencoded" onsubmit="return valid()">
+                <div class="mb-3" id="usernameSpace">
+                    <input id="username" type="text" class="form-control" placeholder="Enter username" name="username" onkeyup="isSameCheck()">
+                    <!--<button id="btnCheck" type="button" class="btn btn-warning" onclick="isSameCheck()">아이디 중복 체크</button>-->
                 </div>
                 <div class="mb-3">
                     <input type="password" class="form-control" placeholder="Enter password" name="password">
@@ -24,4 +25,49 @@
     </div>
 </div>
 
-{{> /layout/footer}}
+<script>
+    let isSame = false;
+
+    function isBlank(){
+        let username = $("#username").val();
+
+        if(!username || /^\s*$/.test(username)){
+            alert("공백은 사용할 수 없어요")
+        }else if(/\s/.test(username)) {
+            alert("공백은 사용할 수 없어요")
+        }else{
+
+        }
+    }
+
+    function valid(){
+        if(isSame == false){
+            alert("아이디 중복체크를 해야 합니다.");
+        }
+        isBlank();
+        return isSame;
+    }
+
+    function isSameCheck(){
+        let username = $("#username").val();
+        console.log(username)
+
+        isBlank();
+
+        $.ajax({
+            url: "/api/username-same-check?username="+username,
+            type: "get"
+        }).done((res)=>{
+            if(res.body === true){
+                isSame = true;
+                alert("사용 가능한 username입니다!");
+            }else{
+                isSame = false;
+                alert("중복된 username입니다!");
+            }
+        }).fail((res)=>{
+            console.log(res.responseJSON.msg);
+        });
+    }
+</script>
+{{> layout/footer}}

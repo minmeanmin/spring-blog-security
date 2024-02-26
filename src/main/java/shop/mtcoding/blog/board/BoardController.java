@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import shop.mtcoding.blog.love.LoveRepository;
+import shop.mtcoding.blog.love.LoveResponse;
 import shop.mtcoding.blog.reply.ReplyRepository;
 import shop.mtcoding.blog.user.User;
 
@@ -20,6 +22,7 @@ public class BoardController {
     private final HttpSession session;
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
+    private final LoveRepository loveRepository;
 
     @PostMapping("/board/{id}/update")
     public String update(@PathVariable int id, BoardRequest.UpdateDTO requestDTO){
@@ -178,11 +181,14 @@ public class BoardController {
         boardDTO.isBoardOwner(sessionUser);
 
         List<BoardResponse.ReplyDTO> replyDTOList = replyRepository.findByBoardId(id, sessionUser);
-
         request.setAttribute("board", boardDTO);
         request.setAttribute("replyList", replyDTOList);
 
-        System.out.println(replyDTOList);
+        LoveResponse.DetailDTO loveDetailDTO = loveRepository.findLove(id, sessionUser.getId());
+        request.setAttribute("love", loveDetailDTO);
+        // fas fa-heart text-danger
+        // far fa-heart
+        // request.setAttribute("css", "far fa-heart");
 
         return "board/detail";
     }

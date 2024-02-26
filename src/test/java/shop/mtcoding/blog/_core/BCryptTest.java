@@ -1,4 +1,4 @@
-package shop.mtcoding.blog._core.util;
+package shop.mtcoding.blog._core;
 
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;

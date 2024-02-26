@@ -8,7 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import shop.mtcoding.blog._core.util.util.Script;
+import shop.mtcoding.blog._core.util.ApiUtil;
 
 
 @RequiredArgsConstructor // final이 붙은 애들에 대한 생성자를 만들어줌
@@ -18,6 +18,18 @@ public class UserController {
     // 자바는 final 변수는 반드시 초기화가 되어야함.
     private final UserRepository userRepository;
     private final HttpSession session;
+
+
+    @GetMapping("/api/username-same-check")
+    public @ResponseBody ApiUtil<?> usernameSameCheck(String username){
+        User user = userRepository.findByUsername(username);
+
+        if(user == null){
+            return new ApiUtil<>(true); // 중복이 없으면 true(가입 가능)
+        }else{
+            return new ApiUtil<>(false); // 중복이 있으면 false(가입 불가)
+        }
+    }
 
     @PostMapping("/user/update")
     public String update( UserRequest.UpdateDTO requestDTO) {

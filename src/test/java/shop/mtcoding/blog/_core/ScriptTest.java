@@ -1,7 +1,7 @@
-package shop.mtcoding.blog._core.util;
+package shop.mtcoding.blog._core;
 
 import org.junit.jupiter.api.Test;
-import shop.mtcoding.blog._core.util.util.Script;
+import shop.mtcoding.blog._core.util.Script;
 
 public class ScriptTest {
 
